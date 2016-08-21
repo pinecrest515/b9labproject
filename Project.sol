@@ -17,7 +17,7 @@ contract Project {
     // This function also puts in logic so that
     // 1. If project goal is reached, current contributor is returned money and payout of already contributed amount happens
     // 2. If project deadline is reached without reaching goal, all contributed amounts are refunded to contributor
-    function fund(address recipient, uint256 goal, uint256 deadline) {
+    function fund(address recipient, uint256 goal, uint256 deadline, uint256 contributedvalue) {
         var project = ProjectData(recipient, 0, goal, deadline);
         if (project.deadline == 0) // check for non-existing campaign funding project
             return;
@@ -48,8 +48,8 @@ contract Project {
     
         // else if funding goal has not been reached and project deadline not passed
         // add the next contribution to the total contribution ledger
-        project.contributed += transaction.value;
-        project.contributions[project.num_contributions]= Contribution(transaction.sender, transaction.value);
+        project.contributed += contributedvalue;
+        project.contributions[project.num_contributions]= Contribution(transaction.sender, contributedvalue);
         project.num_contributions++;
         
     // Payout() This function pays out the contributed amount to funding recepient
