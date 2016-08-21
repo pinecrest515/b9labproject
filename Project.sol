@@ -5,6 +5,7 @@ contract Project {
         uint contributed;
         uint goal;
         uint deadline;
+        uint num_contributions;
         mapping(uint => Contribution) contributions;
     };
     struct Contribution {
@@ -12,46 +13,59 @@ contract Project {
         uint amount;
     };
 
-    // Start a new campaign funding project and contribute to the funding
+    // Fund() This function starts a new campaign funding project and contributes to the funding
+    // This function also puts in logic so that
+    // 1. If project goal is reached, current contributor is returned money and payout of already contributed amount happens
+    // 2. If project deadline is reached without reaching goal, all contributed amounts are refunded to contributor
     function fund(address recipient, uint256 goal, uint256 deadline) {
         var project = ProjectData(recipient, 0, goal, deadline);
         if (project.deadline == 0) // check for non-existing campaign funding project
             return;
-        project.contributed += transaction.value;
-        project.contributions =
-                      Contribution(transaction.sender, transaction.value);
 
-    // Check whether the funding goal of the campaign with id $(campaignId)
-    // has been reached and transfer the money.
+        // Check whether the funding goal of the project
+        // has been reached.  If so, transfer the money.
         if (project.deadline > 0 && project.contributed >= project.goal) {
-            payout(project.recipient, project.contributed);
+            // since goal is already reached, return value back to the current contributor
+            send(project.contributions[num_contributors].contributor,project.contributions[num_contributors].amount);
+            delete project.contributions[num_contributions];
+            // since goal is reached, payout to funding recepient the contributed amount
+            payout();
             // clear storage, we have to do it explicitly 
-            delete project.contributions[i]; // zero out its members
+             for (uint i = 0; i < project.num_contributions; i++) {
+                delete project.contributions[i]; // zero out its members
+            }
             delete project;
         }
-    }
 
-    // Check whether the deadline of the campaign with id $(campaignId) has
-    // passed. In that case, return the contributed money and delete the
-    // campaign.
-        expired = false;
-        if (project.deadline > 0 && block.timestamp > project.deadline) {
-            // pay out the contributors
-            for (uint i = 0; i < campaign.num_contributors; i++) {
-                send(campaign.contributions[i].contributor,
-                     campaign.contributions[i].amount);
-                delete campaign.contributions[i];
+        // Check whether the deadline of the project has
+        // passed without reaching goal. If so, return the contributed money and delete the
+        // funding project
+        if (project.deadline > 0 && project.contributed < project.goal && block.timestamp > project.deadline) {
+            // since deadline has passed before reaching goal, refund everything back to the contributors
+            refund();
+            delete project;
             }
-            delete campaign;
-            expired = true;
-        }
-    }
+    
+        // else if funding goal has not been reached and project deadline not passed
+        // add the next contribution to the total contribution ledger
+        project.contributed += transaction.value;
+        project.contributions[project.num_contributions]= Contribution(transaction.sender, transaction.value);
+        project.num_contributions++;
+        
+    // Payout() This function pays out the contributed amount to funding recepient
+    function payout() returns (bool payout) {
+        send(project.recipient, project.contributed);
+        payout = true;
     }
     
     // Refund() This function sends all individual contributions back to the respective contributor
-    function refund(uint campaignId) returns (uint amount)
-    {
-        amount = project.contributed;
+    function refund() returns (bool refund) {
+        for (uint i = 0; i < project.num_contributors; i++) {
+                send(project.contributions[i].contributor,
+                     project.contributions[i].amount);
+                delete project.contributions[i];
+            }
+        refund = true;
     }
 
 state:
