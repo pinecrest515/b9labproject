@@ -1,4 +1,7 @@
 # b9labproject
+Jim Yuan
+codelearning515@gmail.com
+jim.y on slack
 
 Link to project on github page: https://github.com/pinecrest515/b9labproject
 
