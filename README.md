@@ -1,5 +1,7 @@
 # b9labproject
 
+Link to project on github page: https://github.com/pinecrest515/b9labproject
+
 This is the final project for b9lab blockchain development course.  The project creates a decentralized funding application. This project contains two .sol files, FundingHub and Project.
 
 A) FundingHub is the registry contract for all projects to be funded.  FundingHub.sol conains the following functions:
